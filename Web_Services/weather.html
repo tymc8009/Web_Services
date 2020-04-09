@@ -1,0 +1,159 @@
+<!-- Home Page -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <title>Weather Information</title>
+    <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+  <style>
+      #thermometer_inner { width: 95%; height: 20%; margin:2.5%; background: red; position:absolute; bottom:10%;}
+      #thermometer_outer {height:400px; position:relative;}
+      #temp_today { color:white; text-align:center; position:relative; top:0%; }
+      body{
+      /*image sourced from https://www.google.com/url?sa=i&url=https%3A%2F%2Fopenweathermap.org%2F&psig=AOvVaw20P3Gfg93XrGNztO2nPhr0&ust=1585803443098000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCMDXlKq4xugCFQAAAAAdAAAAABAD*/
+      background-image: url('./img/weather.png');
+      background-repeat: no-repeat;
+      background-size: cover;
+      }
+      .container{
+      /* margin-top: 2%; */
+      padding:2%;
+      opacity: 0.9;
+      background: #FFFFFF;
+      }
+  </style>
+  </head>
+  <body>
+    <div class="container">
+    <br>
+    <h1 id="heading" style="text-align:center">Weather Forecast</h1>
+    <hr>
+    <div class="row">
+      <div class="col-6">
+        <div class="row">
+          <div class="col-2">
+            <!-- source for images: https://www.iconfinder.com/iconsets/weather-line-19 -->
+            <img id="image_today" class="img-fluid" src="img/clear-day.png" alt="Today's Weather Icon">
+          </div>
+          <div class="col-10">
+            <h5>
+              Local Date/Time: <span id="local_time">2020-04-01 11:00AM</span><br>
+              Precipitation: <span id="precip_today">10%</span><br>
+              Humidity: <span id="humidity_today">80%</span><br>
+              Wind Speed: <span id="wind_today">5</span> mph<br>
+              Summary: <span id="summary_today">Summary Info</span>
+            </h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-2">
+
+      </div>
+      <div class="col-4">
+        <div class="card" >
+          <div id="thermometer_outer">
+            <div id="thermometer_inner"><p id="temp_today" class="h3"> 0 F</p></div>
+          </div>
+          <div class="card-body">
+              <h5 class="text-center">Thermometer</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+    <h2 class="h1" style="text-align:center;">5 Day Forecast</h2>
+    <hr>
+    <div class="row" id="5_day_forecast">
+
+    </div>
+    <br>
+  </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  <script>
+    //helper functions
+    var dayOfWeek = "";
+    function formatDate(date, month, year)
+    {
+      month = (month.length < 2) ? ('0' + month) : month;
+      date = (date.length < 2)? ('0' + date) : date;
+      return [year,month,date].join('-');
+    }
+    function getDayofWeek(date, month, year){
+      var week_names = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      dayOfWeek =  week_names[new Date([month,date,year].join('-')).getDay()];
+    }
+    function getFarenheitTemp(temp){
+      return (9*temp/5)+32;
+    }
+    //run when the document object model is ready for javascript code to execute
+    $(document).ready(function() {
+      var url =`https://api.weatherstack.com/forecast?access_key=5bc82451636190abd9d7afe6fe9b20b5&query= Boulder&forecast_days=5`; //Place your weatherstack API Call Here - access_key to be used: 5bc82451636190abd9d7afe6fe9b20b5
+      // 
+      $.ajax({url:url, dataType:"jsonp"}).then(function(data) {
+        // time
+        document.getElementById('local_time').innerText=new Date().toString();
+        // 1
+        document.getElementById('image_today').src=data.current.weather_icons[0];
+
+        // 2
+        document.getElementById('heading').innerText += " - Boulder";
+
+        // 3
+        var temp=getFarenheitTemp(data.current.temperature);
+        var color='grey';
+        if(temp>85)
+        {
+          color='red';
+        }
+        else if (temp<65)
+        {
+          color='blue';
+        }
+        document.getElementById('temp_today').innerText= temp + "° F";
+        // 4
+        document.getElementById("thermometer_inner").style.height = temp.toString() + "%";
+        // extra credit 
+        document.getElementById('thermometer_inner').style.backgroundColor= color;
+        // 5
+        document.getElementById('precip_today').innerText=data.current.precip + "mm";
+        // 6
+        document.getElementById('humidity_today').innerText=data.current.humidity + "%";
+        // 7
+        document.getElementById('wind_today').innerText=data.current.wind_speed;
+        // 8
+        document.getElementById('summary_today').innerText=data.current.weather_descriptions;
+        
+        function getKey(i){
+            var date =new Date();
+            var d = date.getDate() + i;
+            var m = date.getMonth() + 1;
+            var y = date.getFullYear();
+            var key_forecast = formatDate(d.toString(),m.toString(),y.toString()).toString();
+            getDayofWeek(d,m,y);
+            return data.forecast[key_forecast];
+        }
+        
+        document.getElementById("5_day_forecast").innerHTML = "";
+        for(var i = 0; i<5; i++){
+          var forecast = getKey(i);
+          document.getElementById("5_day_forecast").innerHTML += '<div style="width: 20%;"> '
+                    + '<div class="card"><div class="card-body">'
+                    +'      <h5 class="card-title">' + dayOfWeek + '</h5>'
+                    +'      <p class="card-text">High: '+getFarenheitTemp(forecast.maxtemp)+'° F <br>'
+                    + '     Low: '+getFarenheitTemp(forecast.mintemp)+'° F<br>'
+                    + '       Sunrise: '+ forecast.astro.sunrise +'<br>'
+                    + '       Sunset: '+ forecast.astro.sunset + '</p>'
+                    + ' </div>'
+                    + '</div>'
+                    + '</div>';
+        }
+      })
+    })
+  </script>
+</body>
+</html>
